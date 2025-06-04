@@ -1,0 +1,150 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="{% static 'vitrine/logo.png' %}">
+  <title>Salon Élégance - Coiffure & Beauté</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: #fff8f6;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(to right, #d47fa6, #c54c85);
+      color: white;
+      padding: 60px 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-size: 2.8em;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+
+    section {
+      padding: 50px 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #c54c85;
+      font-size: 1.8em;
+      margin-bottom: 15px;
+    }
+
+    .section-box {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .service ul {
+      padding-left: 20px;
+    }
+
+    .service li {
+      margin-bottom: 10px;
+    }
+
+    .contact p {
+      margin: 10px 0;
+    }
+
+    .contact a {
+      display: inline-block;
+      background: #c54c85;
+      color: #fff;
+      padding: 12px 25px;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-top: 15px;
+      transition: background-color 0.3s ease;
+    }
+
+    .contact a:hover {
+      background-color: #a93e6f;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 15px;
+      font-size: 14px;
+      color: #888;
+      border-top: 1px solid #eee;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 2em;
+      }
+
+      section {
+        padding: 30px 15px;
+      }
+
+      h2 {
+        font-size: 1.5em;
+      }
+
+      .contact a {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Salon Élégance</h1>
+    <p>Coiffure, beauté et bien-être pour femmes modernes</p>
+  </header>
+
+  <section class="about section-box">
+    <h2>👩‍🎨 À propos</h2>
+    <p>
+      Bienvenue chez <strong>Salon Élégance</strong>, votre espace beauté spécialisé dans la coiffure féminine.
+      Nous vous accueillons avec soin, sourire et passion pour révéler votre éclat naturel.
+    </p>
+  </section>
+
+  <section class="service section-box">
+    <h2>💇 Nos prestations</h2>
+    <ul>
+      <li>Brushing — <strong>3 000 XAF</strong></li>
+      <li>Tressage — <strong>à partir de 5 000 XAF</strong></li>
+      <li>Coloration & soins — <em>sur devis</em></li>
+      <li>Forfaits mariage & événements — <em>disponibles</em></li>
+    </ul>
+  </section>
+
+  <section class="contact section-box">
+    <h2>📍 Nous contacter</h2>
+    <p>📞 <strong>WhatsApp :</strong> +242 06 000 0000</p>
+    <p>📧 <strong>Email :</strong> <a href="mailto:elegance.salon@mail.com">elegance.salon@mail.com</a></p>
+    <a href="https://wa.me/242060000000" target="_blank" aria-label="Prendre rendez-vous via WhatsApp">Prendre rendez-vous</a>
+  </section>
+
+  <footer>
+    © 2025 Salon Élégance — Tous droits réservés
+  </footer>
+
+</body>
+</html>

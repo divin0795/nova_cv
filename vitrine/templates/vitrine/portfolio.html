@@ -1,0 +1,123 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="{% static 'vitrine/logo.png' %}">
+  <title>Portfolio - Artiste Visuel</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #fdfdfd;
+      color: #222;
+    }
+
+    header {
+      background: #000;
+      color: #fff;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    section {
+      max-width: 1000px;
+      margin: auto;
+      padding: 40px 20px;
+    }
+
+    h2 {
+      color: #555;
+      margin-top: 0;
+    }
+
+    .intro {
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .contact {
+      text-align: center;
+      background: #f3f3f3;
+      padding: 30px;
+      border-radius: 10px;
+    }
+
+    .contact a {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background: #333;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: #aaa;
+      margin-top: 40px;
+      padding-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Divin - Artiste Visuel</h1>
+    <p>Peintures numériques, illustrations, et créations uniques</p>
+  </header>
+
+  <section>
+    <h2>👋 À propos</h2>
+    <p class="intro">
+      Bienvenue sur mon portfolio ! Je suis passionné par l'art visuel, la peinture numérique et l'expression créative. Chaque œuvre est une exploration de formes, de couleurs et d'émotions. 
+    </p>
+  </section>
+
+  <section>
+    <h2>🖼️ Galerie</h2>
+    <div class="gallery">
+      <img src="exemple1.jpg" alt="Oeuvre 1">
+      <img src="exemple2.jpg" alt="Oeuvre 2">
+      <img src="exemple3.jpg" alt="Oeuvre 3">
+      <img src="exemple4.jpg" alt="Oeuvre 4">
+    </div>
+  </section>
+
+  <section class="contact">
+    <h2>📬 Me contacter</h2>
+    <p>Tu peux me joindre pour une commande, une collaboration ou une expo.</p>
+    <a href="mailto:divin3448@gmail.com">📧 Envoyer un mail</a>
+    <a href="https://wa.me/242064590225">📱 WhatsApp</a>
+  </section>
+
+  <footer>
+    © 2025 Divin - Portfolio d'artiste. Tous droits réservés.
+  </footer>
+
+</body>
+</html>

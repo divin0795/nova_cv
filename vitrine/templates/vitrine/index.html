@@ -1,0 +1,199 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova CV</title>
+  <link rel="stylesheet" href="{% static 'vitrine/style.css' %}" />
+  <link rel="icon" type="image/png" href="{% static 'vitrine/logo.png' %}">
+  <meta name="description" content="Création de CV numériques et sites vitrines modernes pour étudiants, freelances et PME. Tarifs accessibles, design pro, livraison rapide.">
+  <meta name="keywords" content="CV numérique, site vitrine, freelance, développeur, Pointe-Noire, Divin Djembo, pas cher, design web, site simple, étudiant">
+  <meta name="author" content="DJEMBO Divin">
+</head>
+<body>
+
+  <header>
+    <img src="{% static 'vitrine/logo.png' %}" alt="Logo" style="width: 80px; border-radius: 50%; margin-bottom: 10px;">
+    <h1>Créateur de CV numériques & sites vitrines</h1>
+    <p>Je t'aide à te rendre visible en ligne avec un design simple et professionnel</p>
+  </header>
+
+  <section>
+    <h2>👋 À propos</h2>
+    <p>Je m'appelle <strong>DJEMBO Divin</strong>. Je crée des sites web simples et efficaces pour les étudiants, freelances et petites entreprises.</p>
+  </section>
+
+  <section>
+    <h2>💼 Nos produits & Tarifs</h2>
+    
+    <div class="service">
+      <h3>📄 CV Simple (format Word ou PDF)</h3>
+      <p>Idéal pour une présentation classique de ton parcours. Facile à personnaliser avec Word ou tout autre traitement de texte.</p>
+      <p><strong>Tarif : 1000 XAF</strong></p>
+    </div>
+
+    <div class="service">
+      <h3>📄 CV Numérique Basique</h3>
+      <p>Design personnalisé sans animation, parfait pour se démarquer avec une touche de professionnalisme.</p>
+      <p><strong>Tarif : 1500 XAF</strong></p>
+    </div>
+
+    <div class="service">
+      <h3>📄 CV Numérique Avancé</h3>
+      <p>Un CV interactif avec des liens cliquables et une animation légère pour un rendu moderne et dynamique.</p>
+      <p><strong>Tarif : 2000 XAF</strong></p>
+    </div>
+
+    <div class="service">
+      <h3>🌐 Forfait CV + Site Vitrine Simple</h3>
+      <p>Un CV numérique accompagné d'un site vitrine pour présenter ton activité ou tes compétences.</p>
+      <p><strong>Tarif : 7000 XAF</strong></p>
+    </div>
+    <div class="service">
+      <h3>🖼️ Portfolio Artiste ou Créatif</h3>
+      <p>Un site simple pour exposer tes œuvres, photos, vidéos ou projets créatifs avec galerie intégrée.</p>
+      <p><strong>Tarif : 5000 XAF</strong></p>
+    </div>
+
+    <div class="service">
+      <h3>🏪 Mini Boutique en ligne (1 à 5 produits)</h3>
+      <p>Une vitrine e-commerce simple pour vendre quelques produits ou services avec contact WhatsApp.</p>
+      <p><strong>Tarif : 10000 XAF</strong></p>
+    </div>
+
+    <div class="service">
+      <h3>📱 Carte de visite numérique</h3>
+      <p>Une page professionnelle à ton nom avec photo, lien WhatsApp, réseaux sociaux, localisation.</p>
+      <p><strong>Tarif : 3000 XAF</strong></p>
+    </div>
+
+    <div class="service">
+      <h3>🛠️ Refonte ou amélioration de site existant</h3>
+      <p>Tu as déjà un site, mais tu veux le moderniser, le rendre plus pro ou plus rapide ? Je m'en occupe.</p>
+      <p><strong>Tarif : à partir de 7000 XAF</strong></p>
+    </div>
+
+    <div class="service">
+      <h3>🧾 Création de facture ou devis personnalisé</h3>
+      <p>Besoin d'un modèle professionnel pour envoyer des devis ou factures à tes clients ?</p>
+      <p><strong>Tarif : 2000 XAF</strong></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>🎁 Options supplémentaires</h2>
+    <ul>
+      <li>🔄 Mise à jour & Maintenance : Après 3 mois, si tu souhaites apporter des modifications à ton CV ou ton site, nous offrons une mise à jour à tarif réduit.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Exemples</h2>
+    <p>👉 <a href="{% url 'cv' %}">CV étudiant (exemple)</a></p>
+    <p>👉 <a href="{% url 'coiffeuse' %}">Site de coiffeuse (exemple)</a></p>
+    <p>👉 <a href="{% url 'portfolio' %}">Portfolio artiste (exemple)</a></p>
+  </section>
+
+  <section>
+    <h2>💡 Pourquoi me choisir ?</h2>
+    <ul>
+      <li>✅ Tarifs accessibles et clairs</li>
+      <li>✅ Sites simples, modernes et responsives</li>
+      <li>✅ Livraison rapide avec accompagnement</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Ce qui me différencie des autres</h2>
+    <p>Contrairement aux plateformes compliquées ou aux services impersonnels, je propose un accompagnement humain, simple et rapide. Pas de blabla technique : tu m’expliques ton besoin, je te livre un CV ou un site clair, beau et prêt à être partagé.</p>
+    <p>Mes tarifs sont fixes, sans surprise, et pensés pour les étudiants, les freelances et les petites entreprises d’ici. Je parle ton langage, j’utilise WhatsApp, et je comprends ce que tu veux vraiment : <strong>être visible, sans te prendre la tête.</strong></p>
+  </section>
+
+  <section>
+    <h2>Et les autres alors ?</h2>
+    <p>Tu pourrais aller sur des plateformes comme Canva, Wix, ou même demander à un développeur en freelance.</p>
+    <ul>
+      <li><strong>Canva</strong> : tu fais tout toi-même, c’est joli mais pas très pro ni facile à personnaliser.</li>
+      <li><strong>Wix</strong> : trop de choix, trop compliqué, et souvent lent sur téléphone.</li>
+      <li><strong>Autres freelances</strong> : souvent chers, ou pas disponibles, ou pas assez clairs.</li>
+    </ul>
+    <p>Moi je suis là, je t’écoute, et je livre ce qu’il te faut simplement et rapidement ✅</p>
+  </section>
+
+  <section>
+    <h2>📦 Passer commande</h2>
+    <p>Pour commander cliquer ici s'il vous plait</p>
+    <a href="{% url 'commande' %}" class="button">Commander maintenant</a>
+    <p>🗣️ <a href="{% url 'feedback' %}">Donnez votre avis</a></p>
+  </section>
+
+  <section id="feedback-section">
+    <h2>Vos avis comptent !</h2>
+    <p>Merci de nous avoir envoyé vos retours. Cliquez ci-dessous pour voir les messages déjà envoyés :</p>
+    <a href="{% url 'liste_feedbacks' %}" class="btn">🗂️ Voir les avis</a>
+  </section>
+
+  <section class="contact">
+    <h2>📞 Me contacter</h2>
+    <p>WhatsApp</p>
+    <a href="https://wa.me/242064590225" target="_blank" class="btn-whatsapp">
+      💬 Discutons
+    </a>
+    <p style="margin-top: 20px;">Email : <a href="mailto:divin3448@mail.com">divin3448@mail.com</a></p>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 DJEMBO Divin. Tous droits réservés.</p>
+    <p><a href="mailto:divin3448@mail.com">divin3448@mail.com</a> | <a href="https://wa.me/242064590225" target="_blank">WhatsApp</a></p>
+    <p>
+      <a href="{% url 'mentions' %}">Mentions légales</a> |
+      <a href="{% url 'politique' %}">Politique de confidentialité</a>
+    </p>
+    <p><a href="#" id="manage-cookies" style="color: white; text-decoration: underline; cursor: pointer;">Gérer mes cookies</a></p>
+
+    <div id="cookie-banner" style="position: fixed; bottom: 0; width: 100%; background: #2d89ef; color: white; text-align: center; padding: 15px; z-index: 1000;">
+      Ce site utilise des cookies pour améliorer votre expérience. 
+      <button id="accept-cookies" style="background: white; color: #2d89ef; font-weight: bold; padding: 8px 12px; border: none; border-radius: 4px; margin-left: 10px; cursor: pointer;">
+        J'accepte
+      </button>
+    </div>
+
+  </footer>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const elements = document.querySelectorAll("section");
+    elements.forEach((el, i) => {
+      el.style.opacity = 0;
+      el.style.transition = "opacity 0.8s ease-out " + (i * 0.1) + "s";
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.opacity = 1;
+          observer.unobserve(el);
+        }
+      });
+      observer.observe(el);
+    });
+  });
+  </script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (localStorage.getItem('cookiesAccepted') === 'true') {
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
+    document.getElementById('accept-cookies').onclick = function () {
+      localStorage.setItem('cookiesAccepted', 'true');
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
+  });
+  document.getElementById('manage-cookies').addEventListener('click', function(e) {
+    e.preventDefault();
+    localStorage.removeItem('cookiesAccepted');
+    document.getElementById('cookie-banner').style.display = 'block';
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Répondre à un feedback</title>
+  <link rel="icon" type="image/png" href  ="{% static 'vitrine/logo.png' %}">
+  <style>
+    body { font-family: sans-serif; background: #f0f8ff; padding: 40px; }
+    .container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
+    h2 { color: #007acc; }
+    textarea { width: 100%; padding: 10px; margin-bottom: 10px; }
+    button { background-color: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 5px; }
+    a { display: inline-block; margin-top: 20px; color: #007acc; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Répondre à {{ feedback.nom }}</h2>
+    <p><strong>Email :</strong> {{ feedback.email }}</p>
+    <p><strong>Message :</strong> {{ feedback.message }}</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Envoyer la réponse</button>
+    </form>
+    <a href="{% url 'liste_feedbacks' %}">← Retour</a>
+  </div>
+</body>
+</html>

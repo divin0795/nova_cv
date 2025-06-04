@@ -1,0 +1,1 @@
+web: gunicorn nova_cv.wsgi:application

@@ -1,0 +1,140 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f6f8;
+  color: #333;
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+header {
+  background: #2d89ef;
+  color: white;
+  padding: 60px 20px;
+  text-align: center;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+header h1 {
+  font-size: 2.2em;
+  margin-bottom: 10px;
+}
+
+header p {
+  font-size: 1.1em;
+  opacity: 0.9;
+}
+
+section {
+  padding: 50px 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+h2 {
+  color: #2d89ef;
+  font-size: 1.8em;
+  margin-top: 0;
+  margin-bottom: 20px;
+  border-left: 5px solid #2d89ef;
+  padding-left: 15px;
+}
+
+.service {
+  background: white;
+  padding: 25px 30px;
+  margin: 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.service:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
+
+.contact {
+  background: #0377fb;
+  color: white;
+  padding: 50px 20px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 60px 0 0;
+}
+
+.contact a {
+  color: white;
+  font-weight: bold;
+}
+
+ul {
+  padding-left: 20px;
+}
+
+ul li {
+  margin-bottom: 12px;
+}
+
+a {
+  color: #2d89ef;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: #155ca6;
+  text-decoration: underline;
+}
+
+.button,
+.btn {
+  display: inline-block;
+  background-color: #2d89ef;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  margin-top: 10px;
+}
+
+.button:hover,
+.btn:hover {
+  background-color: #155ca6;
+}
+
+.btn-whatsapp {
+  background-color: #25D366;
+  color: white;
+  padding: 14px 28px;
+  font-weight: bold;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 15px;
+  font-size: 1em;
+  transition: background 0.3s ease;
+}
+
+.btn-whatsapp:hover {
+  background-color: #1ebe5d;
+}
+
+footer {
+  text-align: center;
+  padding: 30px 20px;
+  background: #f1f1f1;
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 50px;
+  border-top: 1px solid #ccc;
+}
+
+footer a {
+  color: #2d89ef;
+  font-weight: bold;
+}
