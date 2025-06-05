@@ -2,17 +2,18 @@ services:
   - type: web
     name: monsite-django
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn nova_cv.wsgi:application"
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn nova_cv.wsgi:application
     envVars:
       - key: DEBUG
-        value: "False"                 # Mettre "False" en string, car c’est une variable d'environnement
+        value: "False"
       - key: SECRET_KEY
-        generateValue: true           # Génère une clé secrète aléatoire
+        generateValue: true
       - key: ALLOWED_HOSTS
         value: "127.0.0.1,localhost,nova_cv-django.onrender.com"
-
       - key: EMAIL_USER
         value: "divin3448@gmail.com"
       - key: EMAIL_PASSWORD
-        value: "dooe qlvd hyfc sppd" # Assure-toi que ce mot de passe est correct et sécurisé
+        value: "dooe qlvd hyfc sppd"
