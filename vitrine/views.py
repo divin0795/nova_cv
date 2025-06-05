@@ -164,72 +164,93 @@ def commande(request):
         form = OrderForm()
         return render(request, 'vitrine/commande.html', {'form': form, 'confirmation': False})
 
+import json
+import re
+import unicodedata
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from .models import TransactionsValide
+
+# 🔐 Clé secrète partagée (à mettre aussi dans l'app SMS Forwarder)
+SHARED_SECRET = 'votre_clé_secrète_super_sécurisée'
+
 def normalize_text(text):
     text = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8')
     text = re.sub(r'\s+', ' ', text)
-    return text.strip()
+    return text.strip().lower()
 
 @csrf_exempt
 def sms_webhook(request):
-    print(f"Received {request.method} request at /sms-webhook/")
+    print(f"[+] Reçu {request.method} sur /sms-webhook/")
     if request.method != 'POST':
-        print("Method not allowed")
+        print("[!] Méthode non autorisée")
         return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée'}, status=405)
 
     try:
         data = json.loads(request.body)
+        print(f"[Données brutes reçues] {data}")
+
+        # 🔐 Vérification de la clé secrète
+        if data.get('secret') != SHARED_SECRET:
+            print("[!] Clé secrète invalide")
+            return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
+
         raw_message = data.get('message') or data.get('Message') or data.get('key') or ''
-        print(f"Raw message: {raw_message}")
+        sender = data.get('sender', '').strip()
+        print(f"[Expéditeur] {sender}")
+
         message = normalize_text(raw_message)
-        print(f"Normalized message: {message}")
+        print(f"[Message normalisé] {message}")
 
         operateur = None
         montant = None
         numero_transaction = None
 
-        match_mtn = re.search(
-            r'vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA).*?ID[:\s.]*([0-9]+)',
-            message,
-            re.IGNORECASE
-        )
+        if sender == 'MobileMoney':  # MTN
+            match_mtn = re.search(
+                r'vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa).*?id[:\s.]*([0-9]+)',
+                message,
+                re.IGNORECASE
+            )
+            if match_mtn:
+                montant = int(float(match_mtn.group(1).replace(',', '.')))
+                numero_transaction = match_mtn.group(2)
+                operateur = 'MTN'
+                print(f"[✔] MTN: montant={montant}, transaction={numero_transaction}")
 
-        match_airtel = re.search(
-            r'Trans[\.:]?\s*ID[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?\s+Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA)',
-            message,
-            re.IGNORECASE
-        )
+        elif sender == '161':  # Airtel
+            match_airtel = re.search(
+                r'trans[\.:]?\s*id[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?\s+vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa)',
+                message,
+                re.IGNORECASE
+            )
+            if match_airtel:
+                numero_transaction = match_airtel.group(1).rstrip('.')
+                montant = int(float(match_airtel.group(2).replace(',', '.')))
+                operateur = 'AIRTEL'
+                print(f"[✔] AIRTEL: montant={montant}, transaction={numero_transaction}")
 
-        if match_mtn:
-            montant_str = match_mtn.group(1).replace(',', '.')
-            montant = int(float(montant_str))
-            numero_transaction = match_mtn.group(2)
-            operateur = 'MTN'
-            print(f"MTN match: montant={montant}, transaction={numero_transaction}")
-
-        elif match_airtel:
-            numero_transaction = match_airtel.group(1).rstrip('.')
-            montant_str = match_airtel.group(2).replace(',', '.')
-            montant = int(float(montant_str))
-            operateur = 'AIRTEL'
-            print(f"AIRTEL match: montant={montant}, transaction={numero_transaction}")
+        else:
+            print(f"[✘] Expéditeur inconnu ou non autorisé : {sender}")
+            return JsonResponse({'status': 'rejected', 'message': f'Expéditeur non autorisé : {sender}'}, status=403)
 
         if numero_transaction and montant:
-            # Simule la création ou récupération en DB
-            print(f"Saving transaction {numero_transaction} montant={montant} operateur={operateur}")
             transaction, created = TransactionsValide.objects.get_or_create(
-            numero_transaction=numero_transaction,
-            defaults={
-                'montant': montant,
-                'operateur': operateur
-            }
-        )
-            created = True  # simule création
+                numero_transaction=numero_transaction,
+                defaults={
+                    'montant': montant,
+                    'operateur': operateur
+                }
+            )
             if created:
+                print(f"[💾] Nouvelle transaction ajoutée : {numero_transaction}")
                 return JsonResponse({'status': 'success', 'message': 'Transaction ajoutée'})
             else:
+                print(f"[↩] Transaction déjà enregistrée : {numero_transaction}")
                 return JsonResponse({'status': 'exists', 'message': 'Transaction déjà enregistrée'})
 
-        print("Aucun match trouvé pour le message")
+        print("[❌] Aucun motif valide trouvé dans le message")
         return JsonResponse({
             'status': 'error',
             'message': 'SMS non reconnu',
@@ -237,9 +258,10 @@ def sms_webhook(request):
         }, status=400)
 
     except Exception as e:
-        print(f"Exception: {e}")
+        print(f"[💥 Exception] {str(e)}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
+
+# Pages statiques
 def politique_confidentialite(request):
     return render(request, 'vitrine/politique.html')
 
