@@ -24,7 +24,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Applications
 INSTALLED_APPS = [
-    *(["django.contrib.admin"] if DEBUG else []),
+    'django.contrib.admin',  # <- toujours présent, même si DEBUG=False
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'vitrine',
 ]
+
 
 # Middleware
 MIDDLEWARE = [
