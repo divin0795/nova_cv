@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 🔐 Sécurité
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = [s.strip() for s in config('ALLOWED_HOSTS', default='127.0.0.1,localhost,nova-cv.onrender.com').split(',')]
+ALLOWED_HOSTS = [s.strip() for s in config('ALLOWED_HOSTS', default='nova-cv.onrender.com').split(',')]
 
 
 # 🌐 CSRF – Seules les origines HTTPS externes

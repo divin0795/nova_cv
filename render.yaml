@@ -13,11 +13,8 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
-        value: "127.0.0.1,localhost,nova-cv.onrender.com"
+        value: "nova-cv.onrender.com"
       - key: EMAIL_USER
         value: "divin3448@gmail.com"
       - key: EMAIL_PASSWORD
         value: "dooe qlvd hyfc sppd"
-      - key: PORT
-        value: "10000"
-
