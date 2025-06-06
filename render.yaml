@@ -1,12 +1,12 @@
 services:
   - type: web
-    name: nova-cv              # ← Mets ici le nom exact de ton service sur Render
+    name: nova-cv
     env: python
     buildCommand: |
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
       python manage.py migrate
-    startCommand: gunicorn nova_cv.wsgi:application
+    startCommand: gunicorn nova_cv.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DEBUG
         value: "False"
