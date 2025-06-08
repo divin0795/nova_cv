@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from decouple import config
+
+ADMIN_HOST_KEY = config('ADMIN_KEY')
 
 urlpatterns = [
-    path('backoffice-9f3a7c2d/', admin.site.urls),
+    path(ADMIN_HOST_KEY, admin.site.urls),
     path('', include('vitrine.urls')),
 ]
