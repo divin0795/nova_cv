@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views import View
 import unicodedata
+from decouple import config
 from .models import Order
 import re
 from .form import OrderForm 
@@ -173,7 +174,6 @@ from django.shortcuts import render
 from .models import TransactionsValide
 
 # 🔐 Clé secrète partagée (à mettre aussi dans l'app SMS Forwarder)
-SHARED_SECRET = 'votre_clé_secrète_super_sécurisée'
 
 def normalize_text(text):
     text = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8')
@@ -192,7 +192,7 @@ def sms_webhook(request):
         print(f"[Données brutes reçues] {data}")
 
         # 🔐 Vérification de la clé secrète
-        if data.get('secret') != SHARED_SECRET:
+        if data.get('secret') != config('SHARED_SECRET'):
             print("[!] Clé secrète invalide")
             return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
 
@@ -221,7 +221,8 @@ def sms_webhook(request):
 
         elif sender == '161':  # Airtel
             match_airtel = re.search(
-                r'trans[\.:]?\s*id[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?\s+vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa)',
+                r'trans[\.:]?\s*id[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?.*?vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa)'
+,
                 message,
                 re.IGNORECASE
             )
