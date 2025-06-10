@@ -199,7 +199,7 @@ def sms_webhook(request):
             print("[!] Clé secrète invalide")
             return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
 
-        raw_message = data.get('message') or data.get('Message') or ''
+        raw_message = data.get('message') or data.get('Message') or data.get('key') or ''
         key_value = data.get('key') or ''
 
         # Extraction du sender depuis key_value avec regex
