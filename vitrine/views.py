@@ -221,7 +221,7 @@ def sms_webhook(request):
         montant = None
         numero_transaction = None
 
-        if sender == 'MobileMoney':  # MTN
+        if sender == 'MobileMoney()':  # MTN
             match_mtn = re.search(
                 r'vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa).*?id[:\s.]*([0-9]+)',
                 message,
@@ -233,7 +233,7 @@ def sms_webhook(request):
                 operateur = 'MTN'
                 print(f"[✔] MTN: montant={montant}, transaction={numero_transaction}")
 
-        elif sender == '161':  # Airtel
+        elif sender == '161()':  # Airtel
             match_airtel = re.search(
                 r'trans[\.:]?\s*id[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?.*?vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa)',
                 message,
