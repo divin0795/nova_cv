@@ -182,6 +182,7 @@ def normalize_text(text):
 @csrf_exempt
 def sms_webhook(request):
     print(f"[+] Reçu {request.method} sur /sms-webhook/")
+
     if request.method != 'POST':
         print("[!] Méthode non autorisée")
         return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée'}, status=405)
@@ -190,7 +191,6 @@ def sms_webhook(request):
         data = json.loads(request.body)
         print(f"[Données brutes reçues] {data}")
 
-        # Vérification de la clé secrète
         received_secret = data.get('secret')
         print(f"[DEBUG] Clé reçue : {received_secret}")
         print(f"[DEBUG] Clé attendue : {settings.SHARED_SECRET}")
@@ -199,32 +199,30 @@ def sms_webhook(request):
             print("[!] Clé secrète invalide")
             return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
 
-        raw_message = data.get('message') or data.get('Message') or data.get('key') or ''
         key_value = data.get('key') or ''
+        message_original = data.get('message') or data.get('Message') or key_value or ''
+        message_normalized = normalize_text(message_original)
 
-        # Extraction du sender depuis key_value avec regex
+        # Extraire l'expéditeur
         sender_match = re.search(r'De\s*:\s*(\d+)', key_value)
         if sender_match:
             sender = sender_match.group(1)
         else:
-            # Fallback : on prend le début de key_value sans espaces ni ponctuation
             sender = re.sub(r'\W+', '', key_value.split()[0]) if key_value else ''
 
         print(f"[DEBUG] Sender extrait de 'key' : '{sender}'")
         print(f"[Expéditeur] {sender}")
-
-
-        message = normalize_text(raw_message)
-        print(f"[Message normalisé] {message}")
+        print(f"[Message normalisé] {message_normalized}")
 
         operateur = None
         montant = None
         numero_transaction = None
 
-        if sender == 'MobileMoney':  # MTN
+        # Traitement MTN
+        if sender == 'MobileMoney()':
             match_mtn = re.search(
-                r'vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa).*?id[:\s.]*([0-9]+)',
-                message,
+                r'Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA).*?ID[:\s.]*([0-9]+)',
+                message_original,
                 re.IGNORECASE
             )
             if match_mtn:
@@ -233,17 +231,18 @@ def sms_webhook(request):
                 operateur = 'MTN'
                 print(f"[✔] MTN: montant={montant}, transaction={numero_transaction}")
 
-        elif sender == '161':  # Airtel
+        # Traitement Airtel
+        elif sender == '161':
             match_airtel = re.search(
-                r'trans[\.:]?\s*id[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?.*?vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa)',
-                message,
+                r'Trans[\.:]?\s*ID[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?.*?Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA)',
+                message_original,
                 re.IGNORECASE
             )
             if match_airtel:
-                numero_transaction = match_airtel.group(1).rstrip('.')
+                numero_transaction = match_airtel.group(1).rstrip('.')  # conserve la casse
                 montant = int(float(match_airtel.group(2).replace(',', '.')))
                 operateur = 'AIRTEL'
-                print(f"[✔] AIRTEL: montant={montant}, transaction={numero_transaction}")
+                print(f"[✔] AIRTEL : montant={montant}, transaction={numero_transaction}")
 
         else:
             print(f"[✘] Expéditeur inconnu ou non autorisé : {sender}")
@@ -268,13 +267,13 @@ def sms_webhook(request):
         return JsonResponse({
             'status': 'error',
             'message': 'SMS non reconnu',
-            'contenu_nettoye': message
+            'contenu_nettoye': message_normalized
         }, status=400)
 
     except Exception as e:
         print(f"[💥 Exception] {str(e)}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
+    
 # Pages statiques
 def politique_confidentialite(request):
     return render(request, 'vitrine/politique.html')
