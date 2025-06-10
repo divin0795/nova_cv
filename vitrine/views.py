@@ -190,8 +190,7 @@ def sms_webhook(request):
         data = json.loads(request.body)
         print(f"[Données brutes reçues] {data}")
 
-        # 🔐 Vérification de la clé secrète
-        # 🔐 Vérification de la clé secrète
+        # Vérification de la clé secrète
         received_secret = data.get('secret')
         print(f"[DEBUG] Clé reçue : {received_secret}")
         print(f"[DEBUG] Clé attendue : {settings.SHARED_SECRET}")
@@ -200,9 +199,15 @@ def sms_webhook(request):
             print("[!] Clé secrète invalide")
             return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
 
-        raw_message = data.get('message') or data.get('Message') or data.get('key') or ''
-        sender = re.sub(r'\W+', '', sender)
-        print(f"[DEBUG] Sender normalisé : '{sender}'")
+        raw_message = data.get('message') or data.get('Message') or ''
+        key_value = data.get('key') or ''
+
+        # Extraction du sender depuis key (avant le premier tiret ou la chaîne entière)
+        sender = ''
+        if key_value:
+            sender = key_value.split('-')[0]
+            sender = re.sub(r'\W+', '', sender)
+        print(f"[DEBUG] Sender extrait de 'key' : '{sender}'")
         print(f"[Expéditeur] {sender}")
 
         message = normalize_text(raw_message)
@@ -226,8 +231,7 @@ def sms_webhook(request):
 
         elif sender == '161':  # Airtel
             match_airtel = re.search(
-                r'trans[\.:]?\s*id[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?.*?vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa)'
-,
+                r'trans[\.:]?\s*id[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?.*?vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa)',
                 message,
                 re.IGNORECASE
             )
