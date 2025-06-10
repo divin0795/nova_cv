@@ -117,3 +117,6 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ⚙️ Clé primaire par défaut
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#CLE SMSWEBHOOK
+SHARED_SECRET = config("SHARED_SECRET")

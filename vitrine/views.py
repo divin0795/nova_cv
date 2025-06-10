@@ -192,7 +192,7 @@ def sms_webhook(request):
         print(f"[Données brutes reçues] {data}")
 
         # 🔐 Vérification de la clé secrète
-        if data.get('secret') != config('SHARED_SECRET'):
+        if data.get('secret') != settings.SHARED_SECRET:
             print("[!] Clé secrète invalide")
             return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
 
