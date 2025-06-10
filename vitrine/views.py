@@ -201,7 +201,8 @@ def sms_webhook(request):
             return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
 
         raw_message = data.get('message') or data.get('Message') or data.get('key') or ''
-        sender = data.get('sender', '').strip()
+        sender = re.sub(r'\W+', '', sender)
+        print(f"[DEBUG] Sender normalisé : '{sender}'")
         print(f"[Expéditeur] {sender}")
 
         message = normalize_text(raw_message)

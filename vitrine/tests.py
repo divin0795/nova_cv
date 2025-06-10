@@ -1,25 +1,26 @@
 import requests
+import json
 
-ngrok_url = 'https://dfb7-102-129-92-93.ngrok-free.app/sms-webhook/'
+# === URL de ton webhook (modifie-la si besoin) ===
+url = "https://nova-cv.onrender.com/sms-webhook/"
 
-# Message Airtel — format avec nom
-message = (
-    "Trans.ID:CI250424.1537.B29278 Vous avez recu 5200.00 CFA du 057916806 de 9350003. Solde actuel: 5225.00 CFA."
-)
-
-headers = {
-    "Content-Type": "application/json",
-    "User-Agent": "Mozilla/5.0 (Linux; Android 11; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36",
-    "Accept": "*/*",
-}
-
+# === Données simulées ===
 payload = {
-    "message": message
+    "key": "De : 161()\nTrans. ID : PP250609.0916.A76749. Vous avez reçu 14500.00 CFA du 053584351 de ENARQUE PRINCIA. Votre vendu est de 14552.50 CFA",
+    "time": "09/06 09:16 AM",
+    "secret": "smswebhookdepot",
+    "sender": "161"  # ← C'est ça qui manque
 }
 
-try:
-    response = requests.post(ngrok_url, json=payload, headers=headers, timeout=10)
-    print(f"✅ Statut : {response.status_code}")
-    print(f"✅ Réponse : {response.text}")
-except requests.exceptions.RequestException as e:
-    print(f"❌ Erreur lors de la requête : {e}")
+
+# === En-têtes pour indiquer qu'on envoie du JSON ===
+headers = {
+    "Content-Type": "application/json"
+}
+
+# === Requête POST simulée ===
+response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+# === Affichage du résultat ===
+print("Statut :", response.status_code)
+print("Réponse :", response.text)
