@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views import View
 import unicodedata
-from decouple import config
 from .models import Order
 import re
 from .form import OrderForm 
@@ -192,7 +191,7 @@ def sms_webhook(request):
         print(f"[Données brutes reçues] {data}")
 
         # 🔐 Vérification de la clé secrète
-        if data.get('secret') != settings.SHARED_SECRET:
+        if data.get('secret') != settings.SHARED_HOST_SECRET:
             print("[!] Clé secrète invalide")
             return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
 
