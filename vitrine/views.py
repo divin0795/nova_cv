@@ -202,13 +202,17 @@ def sms_webhook(request):
         raw_message = data.get('message') or data.get('Message') or ''
         key_value = data.get('key') or ''
 
-        # Extraction du sender depuis key (avant le premier tiret ou la chaîne entière)
-        sender = ''
-        if key_value:
-            sender = key_value.split('-')[0]
-            sender = re.sub(r'\W+', '', sender)
+        # Extraction du sender depuis key_value avec regex
+        sender_match = re.search(r'De\s*:\s*(\d+)', key_value)
+        if sender_match:
+            sender = sender_match.group(1)
+        else:
+            # Fallback : on prend le début de key_value sans espaces ni ponctuation
+            sender = re.sub(r'\W+', '', key_value.split()[0]) if key_value else ''
+
         print(f"[DEBUG] Sender extrait de 'key' : '{sender}'")
         print(f"[Expéditeur] {sender}")
+
 
         message = normalize_text(raw_message)
         print(f"[Message normalisé] {message}")
