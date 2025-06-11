@@ -203,10 +203,11 @@ def sms_webhook(request):
         message_original = data.get('message') or data.get('Message') or key_value or ''
         message_normalized = normalize_text(message_original)
 
-        # Extraction robuste de l’expéditeur
-        sender_match = re.search(r'De\s*:\s*(.+)', key_value, re.IGNORECASE)
+        # Extraire proprement l’expéditeur
+        sender_match = re.search(r'De\s*:\s*([^\n]+)', key_value)
         if sender_match:
-            sender = sender_match.group(1).strip().lower()
+            raw_sender = sender_match.group(1).strip()
+            sender = re.sub(r'[^\w\d]', '', raw_sender).lower()
         else:
             sender = re.sub(r'\W+', '', key_value.split()[0]).lower() if key_value else ''
 
@@ -219,7 +220,7 @@ def sms_webhook(request):
         numero_transaction = None
 
         # Traitement MTN
-        if 'mobilemoney' in sender:
+        if sender == 'mobilemoney':
             match_mtn = re.search(
                 r'Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA).*?ID[:\s.]*([0-9]+)',
                 message_original,
