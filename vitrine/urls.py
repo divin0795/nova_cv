@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView  # ✅ Import nécessaire pour TemplateView
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -15,6 +16,11 @@ urlpatterns = [
     path('sms-webhook/', views.sms_webhook, name='sms_webhook'),
     path('politique-de-confidentialite/', views.politique_confidentialite, name='politique'),
     path('mentions-legales/', views.mentions_legales, name='mentions'),
+    
+    # 🚀 Route pour le sitemap XML
+    path('sitemap.xml', TemplateView.as_view(
+        template_name="sitemap.xml", content_type='application/xml'
+    )),
 ]
 
 if settings.DEBUG:
