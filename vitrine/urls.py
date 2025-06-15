@@ -19,7 +19,7 @@ urlpatterns = [
     
     # 🚀 Route pour le sitemap XML
     path('sitemap.xml', TemplateView.as_view(
-        template_name="sitemap.xml", content_type='application/xml'
+        template_name="vitrine/sitemap.xml", content_type='application/xml'
     )),
 ]
 
