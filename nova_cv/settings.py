@@ -78,19 +78,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'nova_cv.wsgi.application'
 
 # 🗃️ Base de données
-DATABASE_URL = config('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
-
-if DATABASE_URL.startswith('sqlite'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)
-    }
+DATABASES = {
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=not DEBUG
+    )
+}
 
 # 🔐 Authentification
 AUTH_PASSWORD_VALIDATORS = [
@@ -124,8 +118,5 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # ⚙️ Clé primaire par défaut
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# 🔑 Clé SMSWEBHOOK
+#CLE SMSWEBHOOK
 SHARED_SECRET = config("SHARED_SECRET")
-
-# 🔑 Clé admin (URL)
-ADMIN_KEY = config("ADMIN_KEY")
