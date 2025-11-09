@@ -158,6 +158,7 @@
 
             <label for="transaction">Numéro de transaction :</label>
             <input id="transaction" name="transaction" type="text" required />
+            <label>faites le dépôt avant de mettre le numéro de transaction et de confirmer la commande.</label>
             {% if form.errors.transaction %}
                 <p class="error">{{ form.errors.transaction.0 }}</p>
             {% endif %}
