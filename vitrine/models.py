@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
     
 class Feedback(models.Model):
@@ -47,6 +48,15 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.get_produit_display()} – {self.transaction}"
+    
+    code_commande = models.CharField(
+        max_length=12, unique=True, blank=True, null=True, editable=False
+    )
+    
+    def save(self, *args, **kwargs):
+        if not self.code_commande:
+            self.code_commande = f"CMD-{uuid.uuid4().hex[:8].upper()}"
+        super().save(*args, **kwargs)
 
 
 class TransactionsValide(models.Model):

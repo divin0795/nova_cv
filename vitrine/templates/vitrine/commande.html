@@ -177,12 +177,15 @@
         </form>
 
         {% if confirmation %}
-            <div class="confirmation">
-                <h3>Commande reçue !</h3>
-                <p>Merci <strong>{{ nom }}</strong>, votre commande pour <strong>{{ produit }}</strong> a été enregistrée.</p>
-                <p>Montant : <strong>{{ prix }}</strong> FCFA via <strong>{{ mode }}</strong>, transaction <strong>n° {{ numero }}</strong>.</p>
-            </div>
+        <div class="confirmation">
+            <h3>Commande reçue !</h3>
+            <p>Merci <strong>{{ nom }}</strong>, votre commande pour <strong>{{ produit }}</strong> a été enregistrée.</p>
+            <p>Montant : <strong>{{ prix }}</strong> FCFA via <strong>{{ mode }}</strong>, transaction <strong>n° {{ numero }}</strong>.</p>
+            <p>Votre <strong>code de commande</strong> : <strong>{{ code_commande }}</strong></p>
+            <p>Conservez ce code, il servira à toute vérification de votre paiement.</p>
+        </div>
         {% endif %}
+
 
     </div>
 

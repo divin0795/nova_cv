@@ -40,8 +40,5 @@ class OrderForm(forms.ModelForm):
             'CV_AVANCE': 8000,
             'CV_SITE': 12000,
         }.get(produit)
-
-        # Tu peux vérifier un prix dans meta ou un champ supplémentaire, ou recalculer si tu l'envoies côté client
-        # Ici on force juste le prix correct côté serveur
         cleaned_data['prix'] = prix_reel
         return cleaned_data

@@ -118,7 +118,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ✅ Clé secrète pour Webhook SMS
-SHARED_SECRET = config("SHARED_SECRET")
+HTTPSMS_SIGNING_KEY = config("HTTPSMS_SIGNING_KEY")
 
 # ✅ Clé admin personnalisée (si tu veux l'utiliser)
 ADMIN_KEY = config("ADMIN_KEY", default="admin")

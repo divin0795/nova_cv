@@ -13,6 +13,8 @@ import unicodedata
 from .models import Order
 import re
 from .form import OrderForm 
+import jwt
+from jwt import InvalidTokenError
 import os, uuid, requests
 from .models import TransactionsValide
 from django.views.decorators.csrf import csrf_exempt
@@ -118,32 +120,32 @@ def commande(request):
         form = OrderForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
-            # Récupérer le prix validé côté serveur dans le form.cleaned_data
             order.prix = form.cleaned_data['prix']
             ok, meta = verify_payment(order)
+            
             if ok:
                 order.statut = 'PAID'
                 order.meta = meta
-                order.save()
+                order.save()  # ici code_commande est généré automatiquement
 
                 send_mail(
-                subject="Confirmation de commande",
-                message=(
-                    f"Bonjour {order.nom},\n\n"
-                    f"Nous avons bien reçu votre commande pour : {order.get_produit_display()}.\n"
-                    f"Montant payé : {order.prix} FCFA via {order.mode}.\n"
-                    f"Transaction : {order.transaction}\n\n"
-                    f"Merci pour votre confiance !"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[order.email],
-                fail_silently=False,
-            )
-
+                    subject="Confirmation de commande",
+                    message=(
+                        f"Bonjour {order.nom},\n\n"
+                        f"Votre commande pour : {order.get_produit_display()} a été validée.\n"
+                        f"Montant payé : {order.prix} FCFA via {order.mode}.\n"
+                        f"Transaction : {order.transaction}\n"
+                        f"Code commande : {order.code_commande}\n\n"
+                        "Merci pour votre confiance !"
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[order.email],
+                    fail_silently=False,
+                )
 
                 messages.success(request, "Commande validée avec succès.")
                 return render(request, 'vitrine/commande.html', {
-                    'form': OrderForm(),  # Nouveau formulaire vide pour réafficher après succès
+                    'form': OrderForm(),
                     'confirmation': True,
                     'produit': order.get_produit_display(),
                     'prix': order.prix,
@@ -152,7 +154,9 @@ def commande(request):
                     'nom': order.nom,
                     'telephone': order.telephone,
                     'email': order.email,
+                    'code_commande': order.code_commande,
                 })
+
 
             else:
                 form.add_error('transaction', meta)
@@ -179,101 +183,93 @@ def normalize_text(text):
     text = re.sub(r'\s+', ' ', text)
     return text.strip().lower()
 
+import json, hmac, hashlib, re
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+
 @csrf_exempt
 def sms_webhook(request):
     print(f"[+] Reçu {request.method} sur /sms-webhook/")
 
     if request.method != 'POST':
-        print("[!] Méthode non autorisée")
         return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée'}, status=405)
 
+    # 1. Vérification de la signature httpSMS
+    received_signature = request.headers.get('X-HTTPSMS-Signature')
+    if not received_signature:
+        return JsonResponse({'status': 'unauthorized', 'message': 'Signature absente'}, status=401)
+
+    expected_signature = hmac.new(
+        key=settings.HTTPSMS_SIGNING_KEY.encode(),
+        msg=request.body,
+        digestmod=hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(received_signature, expected_signature):
+        return JsonResponse({'status': 'unauthorized', 'message': 'Signature invalide'}, status=401)
+
+    # 2. Lecture des données (JSON ou form-data)
     try:
-        data = json.loads(request.body)
-        print(f"[Données brutes reçues] {data}")
-
-        received_secret = data.get('secret')
-        print(f"[DEBUG] Clé reçue : {received_secret}")
-        print(f"[DEBUG] Clé attendue : {settings.SHARED_SECRET}")
-
-        if received_secret != settings.SHARED_SECRET:
-            print("[!] Clé secrète invalide")
-            return JsonResponse({'status': 'unauthorized', 'message': 'Clé secrète invalide'}, status=401)
-
-        key_value = data.get('key') or ''
-        message_original = data.get('message') or data.get('Message') or key_value or ''
-        message_normalized = normalize_text(message_original)
-
-        # Extraire proprement l’expéditeur
-        sender_match = re.search(r'De\s*:\s*([^\n]+)', key_value)
-        if sender_match:
-            raw_sender = sender_match.group(1).strip()
-            sender = re.sub(r'[^\w\d]', '', raw_sender).lower()
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
         else:
-            sender = re.sub(r'\W+', '', key_value.split()[0]).lower() if key_value else ''
+            data = request.POST.dict()
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Payload invalide'}, status=400)
 
-        print(f"[DEBUG] Sender extrait de 'key' : '{sender}'")
-        print(f"[Message original] {message_original}")
-        print(f"[Message normalisé] {message_normalized}")
+    print(f"[Données reçues] {data}")
 
-        operateur = None
-        montant = None
-        numero_transaction = None
+    message_original = data.get('message') or data.get('Message') or ''
+    key_value = data.get('key') or ''
 
-        # Traitement MTN
-        if sender == 'mobilemoney':
-            match_mtn = re.search(
-                r'Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA).*?ID[:\s.]*([0-9]+)',
-                message_original,
-                re.IGNORECASE
-            )
-            if match_mtn:
-                montant = int(float(match_mtn.group(1).replace(',', '.')))
-                numero_transaction = match_mtn.group(2)
-                operateur = 'MTN'
-                print(f"[✔] MTN: montant={montant}, transaction={numero_transaction}")
+    # 3. Extraction expéditeur
+    sender_match = re.search(r'De\s*:\s*([^\n]+)', key_value)
+    if sender_match:
+        sender = re.sub(r'[^\w\d]', '', sender_match.group(1)).lower()
+    else:
+        sender = re.sub(r'\W+', '', key_value.split()[0]).lower() if key_value else ''
 
-        # Traitement Airtel
-        elif sender == '161':
-            match_airtel = re.search(
-                r'Trans[\.:]?\s*ID[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+)\.?.*?Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA)',
-                message_original,
-                re.IGNORECASE
-            )
-            if match_airtel:
-                numero_transaction = match_airtel.group(1).rstrip('.')
-                montant = int(float(match_airtel.group(2).replace(',', '.')))
-                operateur = 'AIRTEL'
-                print(f"[✔] AIRTEL : montant={montant}, transaction={numero_transaction}")
+    operateur = montant = numero_transaction = None
 
-        else:
-            print(f"[✘] Expéditeur inconnu ou non autorisé : {sender}")
-            return JsonResponse({'status': 'rejected', 'message': f'Expéditeur non autorisé : {sender}'}, status=403)
+    # 4. MTN
+    if sender == 'mobilemoney':
+        match = re.search(
+            r'Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA).*?ID[:\s.]*([0-9]+)',
+            message_original, re.IGNORECASE
+        )
+        if match:
+            montant = int(float(match.group(1).replace(',', '.')))
+            numero_transaction = match.group(2)
+            operateur = 'MTN'
 
-        if numero_transaction and montant:
-            transaction, created = TransactionsValide.objects.get_or_create(
-                numero_transaction=numero_transaction,
-                defaults={
-                    'montant': montant,
-                    'operateur': operateur
-                }
-            )
-            if created:
-                print(f"[💾] Nouvelle transaction ajoutée : {numero_transaction}")
-                return JsonResponse({'status': 'success', 'message': 'Transaction ajoutée'})
-            else:
-                print(f"[↩] Transaction déjà enregistrée : {numero_transaction}")
-                return JsonResponse({'status': 'exists', 'message': 'Transaction déjà enregistrée'})
+    # 5. Airtel
+    elif sender == '161':
+        match = re.search(
+            r'Trans[\.:]?\s*ID[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+).*?Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)',
+            message_original, re.IGNORECASE
+        )
+        if match:
+            numero_transaction = match.group(1)
+            montant = int(float(match.group(2).replace(',', '.')))
+            operateur = 'AIRTEL'
 
-        print("[❌] Aucun motif valide trouvé dans le message")
-        return JsonResponse({
-            'status': 'error',
-            'message': 'SMS non reconnu',
-            'contenu_nettoye': message_normalized
-        }, status=400)
+    else:
+        return JsonResponse({'status': 'rejected', 'message': f'Expéditeur non autorisé : {sender}'}, status=403)
 
-    except Exception as e:
-        print(f"[💥 Exception] {str(e)}")
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    if not (numero_transaction and montant):
+        return JsonResponse({'status': 'error', 'message': 'SMS non reconnu'}, status=400)
+
+    transaction, created = TransactionsValide.objects.get_or_create(
+        numero_transaction=numero_transaction,
+        defaults={'montant': montant, 'operateur': operateur}
+    )
+
+    return JsonResponse(
+        {'status': 'success' if created else 'exists'},
+        status=200
+    )
+
     
 # Pages statiques
 def politique_confidentialite(request):
