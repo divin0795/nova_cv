@@ -192,84 +192,95 @@ from django.conf import settings
 def sms_webhook(request):
     print(f"[+] Reçu {request.method} sur /sms-webhook/")
 
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée'}, status=405)
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    # 1. Vérification de la signature httpSMS
-    received_signature = request.headers.get('X-HTTPSMS-Signature')
-    if not received_signature:
-        return JsonResponse({'status': 'unauthorized', 'message': 'Signature absente'}, status=401)
+    # 1. Signature HTTP SMS (HMAC SHA256 sur le RAW BODY)
+    signature = request.headers.get("X-HTTPSMS-SIGNATURE")
+    if not signature:
+        return JsonResponse({"error": "Missing HTTPSMS signature"}, status=401)
+
+    raw_body = request.body
 
     expected_signature = hmac.new(
-        key=settings.HTTPSMS_SIGNING_KEY.encode(),
-        msg=request.body,
-        digestmod=hashlib.sha256
+        settings.HTTPSMS_SIGNING_KEY.encode(),
+        raw_body,
+        hashlib.sha256
     ).hexdigest()
 
-    if not hmac.compare_digest(received_signature, expected_signature):
-        return JsonResponse({'status': 'unauthorized', 'message': 'Signature invalide'}, status=401)
+    if not hmac.compare_digest(signature, expected_signature):
+        return JsonResponse({"error": "Invalid HTTPSMS signature"}, status=401)
 
-    # 2. Lecture des données (JSON ou form-data)
+    # 2. JSON STRICT uniquement
+    if request.content_type != "application/json":
+        return JsonResponse({"error": "Invalid content type"}, status=400)
+
     try:
-        if request.content_type == 'application/json':
-            data = json.loads(request.body)
-        else:
-            data = request.POST.dict()
-    except Exception:
-        return JsonResponse({'status': 'error', 'message': 'Payload invalide'}, status=400)
+        data = json.loads(raw_body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
 
-    print(f"[Données reçues] {data}")
+    print("[PAYLOAD HTTPSMS]", data)
 
-    message_original = data.get('message') or data.get('Message') or ''
-    key_value = data.get('key') or ''
+    # 3. Champs contractuels HTTP SMS
+    message_id = data.get("id")
+    sender = data.get("from")
+    message = data.get("message")
 
-    # 3. Extraction expéditeur
-    sender_match = re.search(r'De\s*:\s*([^\n]+)', key_value)
-    if sender_match:
-        sender = re.sub(r'[^\w\d]', '', sender_match.group(1)).lower()
-    else:
-        sender = re.sub(r'\W+', '', key_value.split()[0]).lower() if key_value else ''
+    if not message_id or not sender or not message:
+        return JsonResponse({"error": "Missing required fields"}, status=400)
+
+    # 4. Anti-replay (obligatoire)
+    if TransactionsValide.objects.filter(message_id=message_id).exists():
+        return JsonResponse({"status": "duplicate"}, status=200)
+
+    sender_norm = sender.lower().strip()
 
     operateur = montant = numero_transaction = None
 
-    # 4. MTN
-    if sender == 'mobilemoney':
+    # 5. MTN Mobile Money
+    if sender_norm in ["mobilemoney", "mtn"]:
         match = re.search(
-            r'Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:XAF|CFA).*?ID[:\s.]*([0-9]+)',
-            message_original, re.IGNORECASE
+            r"recu\s+(\d+(?:[.,]\d{1,2})?)\s*(?:xaf|cfa).*?id[:\s]*([0-9]+)",
+            message,
+            re.IGNORECASE
         )
-        if match:
-            montant = int(float(match.group(1).replace(',', '.')))
-            numero_transaction = match.group(2)
-            operateur = 'MTN'
+        if not match:
+            return JsonResponse({"error": "Unrecognized MTN SMS"}, status=400)
 
-    # 5. Airtel
-    elif sender == '161':
+        montant = int(float(match.group(1).replace(",", ".")))
+        numero_transaction = match.group(2)
+        operateur = "MTN"
+
+    # 6. Airtel Money
+    elif sender_norm == "161":
         match = re.search(
-            r'Trans[\.:]?\s*ID[:\s\.]*([A-Z]{2}\d{6}\.\d{4}\.[A-Z0-9]+).*?Vous avez recu\s+(\d+(?:[.,]\d{1,2})?)',
-            message_original, re.IGNORECASE
+            r"id[:\s]*([A-Z0-9.]+).*?recu\s+(\d+(?:[.,]\d{1,2})?)",
+            message,
+            re.IGNORECASE
         )
-        if match:
-            numero_transaction = match.group(1)
-            montant = int(float(match.group(2).replace(',', '.')))
-            operateur = 'AIRTEL'
+        if not match:
+            return JsonResponse({"error": "Unrecognized Airtel SMS"}, status=400)
+
+        numero_transaction = match.group(1)
+        montant = int(float(match.group(2).replace(",", ".")))
+        operateur = "AIRTEL"
 
     else:
-        return JsonResponse({'status': 'rejected', 'message': f'Expéditeur non autorisé : {sender}'}, status=403)
+        return JsonResponse(
+            {"error": f"Unauthorized sender: {sender}"},
+            status=403
+        )
 
-    if not (numero_transaction and montant):
-        return JsonResponse({'status': 'error', 'message': 'SMS non reconnu'}, status=400)
-
-    transaction, created = TransactionsValide.objects.get_or_create(
+    # 7. Enregistrement
+    TransactionsValide.objects.create(
+        message_id=message_id,
         numero_transaction=numero_transaction,
-        defaults={'montant': montant, 'operateur': operateur}
+        montant=montant,
+        operateur=operateur
     )
 
-    return JsonResponse(
-        {'status': 'success' if created else 'exists'},
-        status=200
-    )
-
+    return JsonResponse({"status": "ok"}, status=200)
     
 # Pages statiques
 def politique_confidentialite(request):
