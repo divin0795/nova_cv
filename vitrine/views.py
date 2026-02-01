@@ -193,49 +193,59 @@ def sms_webhook(request):
     print(f"[+] Reçu {request.method} sur /sms-webhook/")
 
     if request.method != "POST":
+        print("[!] Méthode non autorisée")
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
     # 1. Signature HTTP SMS (HMAC SHA256 sur le RAW BODY)
     signature = request.headers.get("X-HTTPSMS-SIGNATURE")
+    print(f"[DEBUG] Signature reçue : {signature}")
     if not signature:
+        print("[!] Signature manquante")
         return JsonResponse({"error": "Missing HTTPSMS signature"}, status=401)
 
     raw_body = request.body
+    print(f"[DEBUG] Raw body : {raw_body}")
 
     expected_signature = hmac.new(
         settings.HTTPSMS_SIGNING_KEY.encode(),
         raw_body,
         hashlib.sha256
     ).hexdigest()
+    print(f"[DEBUG] Signature attendue : {expected_signature}")
 
     if not hmac.compare_digest(signature, expected_signature):
+        print("[!] Signature invalide")
         return JsonResponse({"error": "Invalid HTTPSMS signature"}, status=401)
 
     # 2. JSON STRICT uniquement
+    print(f"[DEBUG] Content-Type : {request.content_type}")
     if request.content_type != "application/json":
+        print("[!] Content type invalide")
         return JsonResponse({"error": "Invalid content type"}, status=400)
 
     try:
         data = json.loads(raw_body)
+        print(f"[DEBUG] JSON parsé : {data}")
     except json.JSONDecodeError:
+        print("[!] JSON invalide")
         return JsonResponse({"error": "Invalid JSON payload"}, status=400)
-
-    print("[PAYLOAD HTTPSMS]", data)
 
     # 3. Champs contractuels HTTP SMS
     message_id = data.get("id")
     sender = data.get("from")
     message = data.get("message")
+    print(f"[DEBUG] message_id={message_id}, sender={sender}, message={message}")
 
     if not message_id or not sender or not message:
+        print("[!] Champs requis manquants")
         return JsonResponse({"error": "Missing required fields"}, status=400)
 
-    # 4. Anti-replay (obligatoire)
+    # 4. Anti-replay
     if TransactionsValide.objects.filter(message_id=message_id).exists():
+        print(f"[!] Message déjà reçu : {message_id}")
         return JsonResponse({"status": "duplicate"}, status=200)
 
     sender_norm = sender.lower().strip()
-
     operateur = montant = numero_transaction = None
 
     # 5. MTN Mobile Money
@@ -246,11 +256,13 @@ def sms_webhook(request):
             re.IGNORECASE
         )
         if not match:
+            print("[!] SMS MTN non reconnu")
             return JsonResponse({"error": "Unrecognized MTN SMS"}, status=400)
 
         montant = int(float(match.group(1).replace(",", ".")))
         numero_transaction = match.group(2)
         operateur = "MTN"
+        print(f"[INFO] MTN -> montant={montant}, numero_transaction={numero_transaction}")
 
     # 6. Airtel Money
     elif sender_norm == "161":
@@ -260,27 +272,32 @@ def sms_webhook(request):
             re.IGNORECASE
         )
         if not match:
+            print("[!] SMS Airtel non reconnu")
             return JsonResponse({"error": "Unrecognized Airtel SMS"}, status=400)
 
         numero_transaction = match.group(1)
         montant = int(float(match.group(2).replace(",", ".")))
         operateur = "AIRTEL"
+        print(f"[INFO] Airtel -> montant={montant}, numero_transaction={numero_transaction}")
 
     else:
+        print(f"[!] Expéditeur non autorisé : {sender}")
         return JsonResponse(
             {"error": f"Unauthorized sender: {sender}"},
             status=403
         )
 
     # 7. Enregistrement
-    TransactionsValide.objects.create(
+    transaction = TransactionsValide.objects.create(
         message_id=message_id,
         numero_transaction=numero_transaction,
         montant=montant,
         operateur=operateur
     )
+    print(f"[OK] Transaction enregistrée : {transaction}")
 
     return JsonResponse({"status": "ok"}, status=200)
+
     
 # Pages statiques
 def politique_confidentialite(request):
