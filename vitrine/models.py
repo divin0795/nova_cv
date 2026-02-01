@@ -60,6 +60,7 @@ class Order(models.Model):
 
 
 class TransactionsValide(models.Model):
+    message_id = models.CharField(max_length=100, unique=True)
     numero_transaction = models.CharField(max_length=100, unique=True)
     montant = models.FloatField()
     operateur = models.CharField(max_length=20)
